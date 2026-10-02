@@ -1,0 +1,2217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Cozy Island Tycoon - 24 Tiles Edition</title>
+
+  <!-- Official YouTube Playables SDK -->
+  <script src="https://www.youtube.com/gaming/playables/sdk.js"></script>
+
+  <style>
+    :root {
+      --bg-cream: #FAF6EE;
+      --bg-warm: #F4ECE1;
+      --panel-bg: #FFFFFF;
+      --wood-dark: #6F4E37;
+      --wood-med: #8D5B4C;
+      --wood-light: #D4A373;
+      --text-main: #3D2B1F;
+      --text-muted: #7E6B5D;
+      --accent-gold: #F4A261;
+      --accent-sun: #E9C46A;
+      --accent-mint: #2A9D8F;
+      --accent-coral: #E76F51;
+      --accent-blue: #457B9D;
+      --border-soft: #E6D8C3;
+      --shadow-soft: 0 4px 16px rgba(111, 78, 55, 0.1);
+      --font-stack: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Nunito", "Quicksand", sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-touch-callout: none;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background-color: var(--bg-cream);
+      font-family: var(--font-stack);
+      color: var(--text-main);
+      touch-action: manipulation;
+    }
+
+    #app-viewport {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: radial-gradient(circle at 50% 30%, #FFFDF9 0%, #F5ECE0 100%);
+      position: relative;
+      overflow: hidden;
+    }
+
+    #game-container {
+      width: 100%;
+      height: 100%;
+      max-width: 520px;
+      max-height: 920px;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      background: #FFFDF9;
+      box-shadow: 0 0 40px rgba(141, 91, 76, 0.15);
+    }
+
+    @media (min-width: 540px) {
+      #game-container {
+        height: 97vh;
+        border-radius: 28px;
+        border: 4px solid #EEDBC5;
+        overflow: hidden;
+      }
+    }
+
+    /* Top Navigation & Status Bar */
+    .top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 14px;
+      background: #FFFBF5;
+      border-bottom: 2px solid #F0E2D0;
+      z-index: 10;
+    }
+
+    .brand-title-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .brand-icon {
+      width: 32px;
+      height: 32px;
+      background: #F4A261;
+      border-radius: 10px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 18px;
+      box-shadow: 0 2px 6px rgba(244, 162, 97, 0.4);
+    }
+
+    .brand-title {
+      font-size: 15px;
+      font-weight: 800;
+      color: var(--wood-dark);
+      letter-spacing: -0.3px;
+    }
+
+    .brand-sub {
+      font-size: 10px;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    .top-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .icon-btn-round {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      border: 1.5px solid #E5D5C0;
+      background: #FFFFFF;
+      color: var(--wood-dark);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.04);
+      transition: all 0.15s ease;
+      font-weight: 800;
+      font-size: 13px;
+    }
+
+    .icon-btn-round:active {
+      transform: scale(0.92);
+      background: #F8EFE4;
+    }
+
+    /* Middle Area: The 24-Tile Minimap Board */
+    .board-stage {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 4px;
+      position: relative;
+    }
+
+    .board-grid-wrapper {
+      position: relative;
+      width: 96vw;
+      height: 96vw;
+      max-width: 440px;
+      max-height: 440px;
+      background: #F9F3EA;
+      border-radius: 20px;
+      border: 3.5px solid #DFCCB7;
+      box-shadow: 0 6px 18px rgba(111, 78, 55, 0.08), inset 0 2px 6px rgba(255,255,255,0.8);
+      display: grid;
+      grid-template-columns: 1.35fr repeat(5, 1fr) 1.35fr;
+      grid-template-rows: 1.35fr repeat(5, 1fr) 1.35fr;
+      gap: 2.5px;
+      padding: 3.5px;
+    }
+
+    /* Individual 24 Tiles */
+    .tile {
+      background: #FFFFFF;
+      border-radius: 6px;
+      border: 1px solid #EAD8C3;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1.5px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+      cursor: pointer;
+      transition: transform 0.1s ease, border-color 0.2s, background-color 0.2s, box-shadow 0.2s;
+    }
+
+    .tile.corner {
+      background: #FFF8EE;
+      border-color: #E2CDAF;
+      justify-content: center;
+      gap: 2px;
+      padding: 3px;
+    }
+
+    /* CLEAR PROMINENT LAND OWNERSHIP MARKING */
+    .tile.is-owned {
+      border-width: 2px !important;
+      box-shadow: 0 1px 6px rgba(0,0,0,0.12);
+    }
+
+    .owner-banner {
+      width: 100%;
+      padding: 1.5px 0;
+      font-size: 7.5px;
+      font-weight: 900;
+      text-align: center;
+      color: #FFFFFF;
+      border-radius: 0 0 4px 4px;
+      letter-spacing: 0.2px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 2px;
+      box-shadow: 0 -1px 3px rgba(0,0,0,0.15);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .unowned-tag {
+      font-size: 7.5px;
+      font-weight: 800;
+      color: var(--wood-med);
+      padding: 1px 0;
+    }
+
+    .tile.drop-target {
+      border: 2px dashed #2A9D8F !important;
+      box-shadow: 0 0 12px rgba(42, 157, 143, 0.45) !important;
+      transform: scale(1.05);
+      z-index: 8;
+    }
+
+    .tile.drop-hover {
+      background: #E8F5E9 !important;
+      border-color: #2E7D32 !important;
+      box-shadow: 0 0 16px rgba(46, 125, 50, 0.7) !important;
+    }
+
+    .tile-color-bar {
+      width: 100%;
+      height: 6px;
+      border-radius: 3px;
+    }
+
+    .tile-name {
+      font-size: 8px;
+      font-weight: 800;
+      color: var(--text-main);
+      line-height: 1.05;
+      max-width: 100%;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .tile-building-visual {
+      font-size: 11.5px;
+      line-height: 1;
+      filter: drop-shadow(0 1px 2px rgba(0,0,0,0.12));
+      transition: transform 0.25s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+    }
+
+    .tile-building-visual.bounce {
+      animation: pop-bounce 0.45s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+    }
+
+    @keyframes pop-bounce {
+      0% { transform: scale(0.4) translateY(-10px); }
+      70% { transform: scale(1.35) translateY(-2px); }
+      100% { transform: scale(1) translateY(0); }
+    }
+
+    /* Center Board Area */
+    .board-center {
+      grid-column: 2 / 7;
+      grid-row: 2 / 7;
+      background: radial-gradient(circle at 50% 40%, #FEFBF6 0%, #F5E8D3 100%);
+      border-radius: 12px;
+      border: 1.5px dashed #DCC3A5;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 6px;
+      position: relative;
+    }
+
+    .island-badge {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      background: rgba(255, 255, 255, 0.9);
+      border: 1px solid #E6D2BA;
+      border-radius: 14px;
+      padding: 3px 10px;
+      font-size: 10px;
+      font-weight: 800;
+      color: var(--wood-dark);
+      box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+    }
+
+    /* Dice Box */
+    .dice-container {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin: 3px 0;
+    }
+
+    .dice {
+      width: 40px;
+      height: 40px;
+      background: #FFFFFF;
+      border: 2px solid #D5BCA2;
+      border-radius: 10px;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      grid-template-rows: repeat(3, 1fr);
+      padding: 3.5px;
+      box-shadow: 0 4px 8px rgba(111, 78, 55, 0.12), inset 0 1px 2px #fff;
+    }
+
+    .dice.rolling {
+      animation: dice-shake 0.35s ease-in-out infinite alternate;
+    }
+
+    @keyframes dice-shake {
+      0% { transform: rotate(-12deg) scale(0.95); }
+      100% { transform: rotate(12deg) scale(1.05); }
+    }
+
+    .dot {
+      width: 5.5px;
+      height: 5.5px;
+      background: #6F4E37;
+      border-radius: 50%;
+      margin: auto;
+    }
+
+    .event-toast {
+      background: #FFFFFF;
+      border: 1.5px solid #E5D0B7;
+      border-radius: 10px;
+      padding: 5px 10px;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--wood-dark);
+      text-align: center;
+      max-width: 92%;
+      box-shadow: 0 2px 8px rgba(111, 78, 55, 0.08);
+      min-height: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Tokens Layer */
+    .tokens-layer {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+    }
+
+    .player-token {
+      position: absolute;
+      width: 19px;
+      height: 19px;
+      border-radius: 50%;
+      border: 2px solid #FFFFFF;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 9.5px;
+      transition: all 0.22s cubic-bezier(0.25, 1, 0.5, 1);
+      z-index: 5;
+    }
+
+    /* Bottom Deck & Interactive Building Tray */
+    .bottom-section {
+      background: #FFFFFF;
+      border-top: 2.5px solid #F0E3D2;
+      border-radius: 20px 20px 0 0;
+      padding: 9px 14px env(safe-area-inset-bottom, 10px) 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      box-shadow: 0 -4px 16px rgba(111, 78, 55, 0.06);
+      z-index: 10;
+    }
+
+    .current-turn-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .turn-badge {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .turn-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      border: 2px solid #E6D8C3;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 16px;
+    }
+
+    .turn-details {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .turn-player-name {
+      font-size: 13px;
+      font-weight: 800;
+      color: var(--wood-dark);
+    }
+
+    .turn-player-cash {
+      font-size: 14px;
+      font-weight: 900;
+      color: #2E7D32;
+    }
+
+    .badge-pill {
+      background: #E8F5E9;
+      color: #2E7D32;
+      border: 1px solid #C8E6C9;
+      padding: 3px 10px;
+      border-radius: 14px;
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    /* Action Buttons */
+    .action-buttons-group {
+      display: flex;
+      gap: 8px;
+    }
+
+    .btn-pill {
+      flex: 1;
+      padding: 10px 14px;
+      border-radius: 24px;
+      border: none;
+      font-size: 13px;
+      font-weight: 800;
+      letter-spacing: 0.3px;
+      cursor: pointer;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 6px;
+      box-shadow: 0 3px 8px rgba(0,0,0,0.08);
+      transition: all 0.15s ease;
+    }
+
+    .btn-pill:active:not(:disabled) {
+      transform: scale(0.96);
+    }
+
+    .btn-pill:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #F4A261 0%, #E76F51 100%);
+      color: #FFFFFF;
+      box-shadow: 0 4px 12px rgba(231, 111, 81, 0.3);
+    }
+
+    .btn-secondary {
+      background: #F4E8D8;
+      color: var(--wood-dark);
+      border: 1px solid #DDC6AD;
+    }
+
+    .btn-cottage {
+      background: linear-gradient(135deg, #2A9D8F 0%, #21867A 100%);
+      color: #FFFFFF;
+      box-shadow: 0 4px 12px rgba(42, 157, 143, 0.3);
+    }
+
+    /* Drag & Drop Building Tray */
+    .drag-tray-container {
+      display: none;
+      background: #FDF7ED;
+      border: 2px dashed #2A9D8F;
+      border-radius: 16px;
+      padding: 8px 12px;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .drag-tray-container.active {
+      display: flex;
+    }
+
+    .drag-tray-desc {
+      display: flex;
+      flex-direction: column;
+      font-size: 11px;
+      font-weight: 800;
+      color: #1D6B62;
+    }
+
+    .drag-tray-items {
+      display: flex;
+      gap: 10px;
+    }
+
+    .drag-item {
+      width: 44px;
+      height: 44px;
+      background: #FFFFFF;
+      border: 2px solid #2A9D8F;
+      border-radius: 12px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      font-size: 18px;
+      cursor: grab;
+      box-shadow: 0 3px 8px rgba(42, 157, 143, 0.25);
+      touch-action: none;
+      transition: transform 0.15s ease;
+    }
+
+    .drag-item:active {
+      cursor: grabbing;
+      transform: scale(1.1);
+    }
+
+    .drag-item-cost {
+      font-size: 8px;
+      font-weight: 900;
+      color: #2E7D32;
+    }
+
+    #dragged-ghost {
+      position: fixed;
+      pointer-events: none;
+      font-size: 28px;
+      z-index: 1000;
+      display: none;
+      transform: translate(-50%, -50%) scale(1.2);
+      filter: drop-shadow(0 6px 12px rgba(0,0,0,0.3));
+    }
+
+    /* Player Roster Horizontal Scroll */
+    .players-roster {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding: 2px 2px 4px 2px;
+      scrollbar-width: none;
+    }
+    .players-roster::-webkit-scrollbar {
+      display: none;
+    }
+
+    .player-card-chip {
+      background: #FAF5ED;
+      border: 1.5px solid #E8DAC6;
+      border-radius: 14px;
+      padding: 5px 9px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-shrink: 0;
+    }
+
+    .player-card-chip.active {
+      background: #FFF7EC;
+      border-color: #E76F51;
+      box-shadow: 0 2px 8px rgba(231, 111, 81, 0.2);
+    }
+
+    .player-card-chip.bankrupt {
+      opacity: 0.4;
+      filter: grayscale(1);
+      text-decoration: line-through;
+    }
+
+    .chip-avatar { font-size: 14px; }
+    .chip-name { font-size: 10.5px; font-weight: 800; color: var(--wood-dark); }
+    .chip-money { font-size: 10.5px; font-weight: 800; color: #2E7D32; }
+
+    /* Modals & Overlays */
+    .modal-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(61, 43, 31, 0.72);
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 100;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s ease;
+      padding: 16px;
+    }
+
+    .modal-overlay.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .modal-card {
+      width: 100%;
+      max-width: 360px;
+      background: #FFFDF9;
+      border: 2px solid #EAD8C2;
+      border-radius: 24px;
+      padding: 20px;
+      text-align: center;
+      box-shadow: 0 16px 36px rgba(0,0,0,0.2);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      transform: scale(0.92);
+      transition: transform 0.2s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+    }
+
+    .modal-overlay.active .modal-card {
+      transform: scale(1);
+    }
+
+    .modal-title {
+      font-size: 20px;
+      font-weight: 900;
+      color: var(--wood-dark);
+    }
+
+    .modal-sub {
+      font-size: 12px;
+      color: var(--text-muted);
+      line-height: 1.4;
+    }
+
+    .player-select-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+      margin: 8px 0;
+    }
+
+    .count-pill {
+      padding: 9px 0;
+      border-radius: 12px;
+      border: 2px solid #E6D8C3;
+      background: #FAF6EE;
+      font-size: 15px;
+      font-weight: 900;
+      color: var(--wood-dark);
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .count-pill.selected {
+      background: #F4A261;
+      border-color: #E76F51;
+      color: #fff;
+      box-shadow: 0 4px 10px rgba(244, 162, 97, 0.35);
+    }
+
+    /* Negotiation Mini-Game */
+    .negotiation-slider-track {
+      position: relative;
+      width: 100%;
+      height: 28px;
+      background: #E8DCCB;
+      border-radius: 14px;
+      overflow: hidden;
+      margin: 12px 0 6px 0;
+      border: 2px solid #D5C2AA;
+    }
+
+    .negotiation-zone-red {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: #FFCDD2;
+    }
+
+    .negotiation-zone-yellow {
+      position: absolute;
+      top: 0;
+      left: 28%;
+      width: 44%;
+      height: 100%;
+      background: #FFF9C4;
+    }
+
+    .negotiation-zone-green {
+      position: absolute;
+      top: 0;
+      left: 42%;
+      width: 16%;
+      height: 100%;
+      background: #C8E6C9;
+      box-shadow: 0 0 8px #4CAF50;
+    }
+
+    .negotiation-needle {
+      position: absolute;
+      top: 0;
+      left: 0%;
+      width: 8px;
+      height: 100%;
+      background: #D32F2F;
+      border-radius: 4px;
+      transform: translateX(-50%);
+      box-shadow: 0 0 6px rgba(0,0,0,0.5);
+    }
+
+    /* Auction Arena */
+    .auction-bid-display {
+      background: #F7EFE4;
+      border: 2px solid #E2D1BD;
+      border-radius: 16px;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .auction-timer-bar {
+      width: 100%;
+      height: 7px;
+      background: #E0CDB8;
+      border-radius: 8px;
+      overflow: hidden;
+      margin-top: 4px;
+    }
+
+    .auction-timer-fill {
+      height: 100%;
+      width: 100%;
+      background: linear-gradient(90deg, #2A9D8F, #E76F51);
+      transition: width 0.1s linear;
+    }
+
+    .auction-speech-bubble {
+      font-size: 11px;
+      font-weight: 800;
+      color: #E76F51;
+      min-height: 20px;
+    }
+
+    .float-coin {
+      position: absolute;
+      font-weight: 900;
+      font-size: 15px;
+      color: #2E7D32;
+      text-shadow: 0 1px 2px #fff;
+      pointer-events: none;
+      z-index: 50;
+      animation: float-coin-up 1s ease-out forwards;
+    }
+
+    @keyframes float-coin-up {
+      0% { opacity: 1; transform: translate(-50%, -50%) scale(0.8); }
+      50% { transform: translate(-50%, -80px) scale(1.2); }
+      100% { opacity: 0; transform: translate(-50%, -120px) scale(1); }
+    }
+  </style>
+</head>
+<body>
+  <div id="app-viewport">
+    <div id="game-container">
+
+      <!-- Dragged ghost icon -->
+      <div id="dragged-ghost">🏡</div>
+
+      <!-- Top Navigation & Status -->
+      <header class="top-bar">
+        <div class="brand-title-group">
+          <div class="brand-icon">🏝️</div>
+          <div>
+            <div class="brand-title">Cozy Island Tycoon</div>
+            <div class="brand-sub">Round <span id="round-indicator">1</span></div>
+          </div>
+        </div>
+
+        <div class="top-actions">
+          <button class="icon-btn-round" id="btn-speed" title="Speed Toggle">1x</button>
+          <button class="icon-btn-round" id="btn-sound" title="Sound Toggle">
+            <span id="sound-icon-on">🔔</span>
+            <span id="sound-icon-off" style="display:none;">🔕</span>
+          </button>
+        </div>
+      </header>
+
+      <!-- Center Board: 24-Tile Minimap Grid (7x7 perimeter) -->
+      <main class="board-stage">
+        <div class="board-grid-wrapper" id="board-grid">
+          <!-- Central Island Area -->
+          <div class="board-center">
+            <div class="island-badge">
+              <span>🥥</span>
+              <span id="board-center-tag">Island Board (24 Lands)</span>
+            </div>
+
+            <!-- Animated Dice Container -->
+            <div class="dice-container" id="dice-container">
+              <div class="dice" id="dice-1">
+                <div class="dot" style="grid-area: 2 / 2;"></div>
+              </div>
+              <div class="dice" id="dice-2">
+                <div class="dot" style="grid-area: 2 / 2;"></div>
+              </div>
+            </div>
+
+            <!-- Dynamic Event Toast -->
+            <div class="event-toast" id="event-toast">Roll the dice to claim island lands!</div>
+          </div>
+
+          <!-- Tokens Overlay Layer -->
+          <div class="tokens-layer" id="tokens-layer"></div>
+        </div>
+      </main>
+
+      <!-- Bottom Player Roster & Actions -->
+      <footer class="bottom-section">
+        <div class="current-turn-row">
+          <div class="turn-badge">
+            <div class="turn-avatar" id="current-player-avatar">🐻</div>
+            <div class="turn-details">
+              <div class="turn-player-name" id="current-player-name">Player 1 (You)</div>
+              <div class="turn-player-cash" id="current-player-cash">$1,500</div>
+            </div>
+          </div>
+
+          <div class="badge-pill" id="turn-status-pill">Your Turn</div>
+        </div>
+
+        <!-- Standard Actions -->
+        <div class="action-buttons-group" id="main-actions-group">
+          <button class="btn-pill btn-primary" id="btn-roll-dice">
+            <span>🎲</span> Roll Dice
+          </button>
+          <button class="btn-pill btn-cottage" id="btn-toggle-build">
+            <span>🏡</span> Drag & Build
+          </button>
+          <button class="btn-pill btn-secondary" id="btn-end-turn" disabled>
+            <span>⏭️</span> Done
+          </button>
+        </div>
+
+        <!-- Drag-and-Drop Cottage Tray -->
+        <div class="drag-tray-container" id="drag-tray">
+          <div class="drag-tray-desc">
+            <span>🔨 BUILD MODE</span>
+            <span style="font-size:9px; font-weight:600; opacity:0.8;">Drag cottage onto glowing lot</span>
+          </div>
+
+          <div class="drag-tray-items">
+            <div class="drag-item" id="drag-cottage" title="Drag to build cottage">
+              <span>🏡</span>
+              <span class="drag-item-cost">$75</span>
+            </div>
+            <div class="drag-item" id="drag-villa" title="Drag to build luxury villa" style="border-color:#E76F51;">
+              <span>🏰</span>
+              <span class="drag-item-cost" style="color:#E76F51;">$150</span>
+            </div>
+          </div>
+
+          <button class="icon-btn-round" id="btn-close-tray" style="width:28px; height:28px; font-size:11px;">✕</button>
+        </div>
+
+        <!-- Horizontal Player Roster Chips -->
+        <div class="players-roster" id="players-roster"></div>
+      </footer>
+
+      <!-- Modal: Start Screen / Player Selection -->
+      <div class="modal-overlay active" id="modal-start">
+        <div class="modal-card">
+          <div style="font-size: 38px;">🏝️🎲</div>
+          <h2 class="modal-title">Cozy Island Tycoon</h2>
+          <p class="modal-sub">24-space island board! Roll, buy real lands, mark your island empire, and negotiate rents!</p>
+
+          <div style="font-size: 13px; font-weight: 800; color: var(--wood-dark); margin-top: 6px;">
+            Choose Total Players (2 - 8):
+          </div>
+          <div class="player-select-grid" id="player-count-grid">
+            <button class="count-pill" data-count="2">2</button>
+            <button class="count-pill" data-count="3">3</button>
+            <button class="count-pill selected" data-count="4">4</button>
+            <button class="count-pill" data-count="5">5</button>
+            <button class="count-pill" data-count="6">6</button>
+            <button class="count-pill" data-count="7">7</button>
+            <button class="count-pill" data-count="8">8</button>
+          </div>
+          <div class="modal-sub" id="bot-count-label">1 Human vs 3 AI Island Traders</div>
+
+          <button class="btn-pill btn-primary" id="btn-start-game" style="margin-top: 10px; padding: 14px;">
+            🌴 Start Island Adventure
+          </button>
+        </div>
+      </div>
+
+      <!-- Modal: Property Purchase Confirmation -->
+      <div class="modal-overlay" id="modal-buy-property">
+        <div class="modal-card">
+          <h3 class="modal-title" style="font-size: 18px;">Island Land Available!</h3>
+          <p class="modal-sub">Would you like to buy this land plot, or trigger a 10s public auction?</p>
+
+          <div style="background:#FFF; border:2px solid #E0CFB8; border-radius:14px; overflow:hidden; margin:4px 0;">
+            <div id="buy-deed-header" style="background:#2A9D8F; color:#fff; font-weight:900; padding:8px;">Seashell Beach</div>
+            <div style="padding:8px 12px; font-size:11px; display:flex; justify-content:space-between;">
+              <span>Purchase Price:</span>
+              <span id="buy-deed-price" style="font-weight:900;">$60</span>
+            </div>
+          </div>
+
+          <div class="action-buttons-group">
+            <button class="btn-pill btn-primary" id="btn-confirm-buy">Buy Land</button>
+            <button class="btn-pill btn-secondary" id="btn-trigger-auction">🔨 Start Auction</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Negotiation Modal -->
+      <div class="modal-overlay" id="modal-negotiate">
+        <div class="modal-card">
+          <div style="font-size:32px;">🤝⚖️</div>
+          <h3 class="modal-title" style="font-size: 18px;">Rent Negotiation!</h3>
+          <p class="modal-sub" id="negotiate-desc">You landed on Luna's land! Stop the slider in GREEN to get a 50% discount!</p>
+
+          <div class="negotiation-slider-track" id="negotiation-track">
+            <div class="negotiation-zone-red"></div>
+            <div class="negotiation-zone-yellow"></div>
+            <div class="negotiation-zone-green"></div>
+            <div class="negotiation-needle" id="negotiation-needle"></div>
+          </div>
+
+          <div style="font-size:11px; font-weight:800; color:var(--text-muted); display:flex; justify-content:space-between;">
+            <span>Full Rent</span>
+            <span style="color:#2A9D8F;">50% OFF (Green)</span>
+            <span>Full Rent</span>
+          </div>
+
+          <button class="btn-pill btn-primary" id="btn-stop-negotiate" style="margin-top:8px; padding:13px;">
+            ✋ STOP & BARGAIN!
+          </button>
+        </div>
+      </div>
+
+      <!-- Live Auction Modal -->
+      <div class="modal-overlay" id="modal-auction">
+        <div class="modal-card">
+          <div style="font-size:30px;">🔨💰</div>
+          <h3 class="modal-title" style="font-size: 18px;">Public Island Auction!</h3>
+          <p class="modal-sub" id="auction-lot-name">Bidding for: Coral Reef</p>
+
+          <div class="auction-bid-display">
+            <div style="font-size:11px; font-weight:800; color:var(--text-muted); text-transform:uppercase;">Current Highest Bid</div>
+            <div style="font-size:26px; font-weight:900; color:#2E7D32;" id="auction-high-bid">$60</div>
+            <div style="font-size:11px; font-weight:800; color:var(--wood-dark);" id="auction-high-bidder">Bidder: None</div>
+            <div class="auction-timer-bar">
+              <div class="auction-timer-fill" id="auction-timer-fill"></div>
+            </div>
+          </div>
+
+          <div class="auction-speech-bubble" id="auction-bubble">"Opening bid is placed! Anyone higher?"</div>
+
+          <button class="btn-pill btn-primary" id="btn-place-bid" style="padding:13px;">
+            🙋 Place Bid (+$20)
+          </button>
+        </div>
+      </div>
+
+      <!-- Victory / Game Over Modal -->
+      <div class="modal-overlay" id="modal-gameover">
+        <div class="modal-card">
+          <div style="font-size: 42px;" id="gameover-emoji">👑</div>
+          <h2 class="modal-title" id="gameover-title">Island Champion!</h2>
+          <p class="modal-sub" id="gameover-msg">You have established the most prosperous island monopoly!</p>
+
+          <div style="background:#F9F3EA; border:1px solid #E6D6C3; border-radius:14px; padding:12px; margin:8px 0;">
+            <div style="font-size:11px; font-weight:800; color:var(--text-muted); text-transform:uppercase;">Final Net Worth</div>
+            <div style="font-size:28px; font-weight:900; color:#2E7D32;" id="gameover-networth">$4,250</div>
+          </div>
+
+          <button class="btn-pill btn-primary" id="btn-play-again" style="padding:14px;">
+            🔄 Play Another Island
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    /* ==========================================================================
+       1. YOUTUBE PLAYABLES SDK ADAPTER (ytgame)
+       ========================================================================== */
+    const PlayablesBridge = {
+      isSDKAvailable: false,
+      firstFrameDispatched: false,
+      gameReadyDispatched: false,
+
+      init() {
+        if (typeof ytgame !== 'undefined') {
+          this.isSDKAvailable = true;
+          if (ytgame.system && typeof ytgame.system.isAudioEnabled === 'function') {
+            SoundManager.setMuted(!ytgame.system.isAudioEnabled());
+          }
+          if (ytgame.system && typeof ytgame.system.onAudioEnabledChange === 'function') {
+            ytgame.system.onAudioEnabledChange((enabled) => {
+              SoundManager.setMuted(!enabled);
+            });
+          }
+          if (ytgame.system && typeof ytgame.system.onPause === 'function') {
+            ytgame.system.onPause(() => { Game.isPaused = true; });
+          }
+          if (ytgame.system && typeof ytgame.system.onResume === 'function') {
+            ytgame.system.onResume(() => { Game.isPaused = false; });
+          }
+        }
+      },
+
+      firstFrameReady() {
+        if (this.firstFrameDispatched) return;
+        this.firstFrameDispatched = true;
+        if (this.isSDKAvailable && ytgame.game && typeof ytgame.game.firstFrameReady === 'function') {
+          try { ytgame.game.firstFrameReady(); } catch (e) {}
+        }
+      },
+
+      gameReady() {
+        if (this.gameReadyDispatched) return;
+        this.gameReadyDispatched = true;
+        if (this.isSDKAvailable && ytgame.game && typeof ytgame.game.gameReady === 'function') {
+          try { ytgame.game.gameReady(); } catch (e) {}
+        }
+      },
+
+      sendScore(score) {
+        const cleanScore = Math.max(0, Math.floor(score));
+        if (this.isSDKAvailable && ytgame.engagement && typeof ytgame.engagement.sendScore === 'function') {
+          try { ytgame.engagement.sendScore({ score: cleanScore }); } catch (e) {}
+        }
+      }
+    };
+
+    /* ==========================================================================
+       2. PROCEDURAL WEB AUDIO SYNTHESIZER
+       ========================================================================== */
+    const SoundManager = {
+      ctx: null,
+      muted: false,
+
+      init() {
+        try {
+          const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+          if (AudioContextClass) this.ctx = new AudioContextClass();
+        } catch (e) {}
+      },
+
+      unlock() {
+        if (this.ctx && this.ctx.state === 'suspended') {
+          this.ctx.resume().catch(() => {});
+        }
+      },
+
+      setMuted(m) {
+        this.muted = m;
+        updateSoundIcons();
+      },
+
+      toggle() {
+        this.setMuted(!this.muted);
+      },
+
+      playDiceClatter() {
+        if (this.muted || !this.ctx) return;
+        this.unlock();
+        const now = this.ctx.currentTime;
+        for (let i = 0; i < 3; i++) {
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(220 + Math.random() * 80, now + i * 0.04);
+          gain.gain.setValueAtTime(0.18, now + i * 0.04);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.04 + 0.035);
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start(now + i * 0.04);
+          osc.stop(now + i * 0.04 + 0.04);
+        }
+      },
+
+      playHop() {
+        if (this.muted || !this.ctx) return;
+        this.unlock();
+        const now = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(320, now);
+        osc.frequency.exponentialRampToValueAtTime(560, now + 0.05);
+        gain.gain.setValueAtTime(0.16, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.06);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(now);
+        osc.stop(now + 0.07);
+      },
+
+      playMoney() {
+        if (this.muted || !this.ctx) return;
+        this.unlock();
+        const now = this.ctx.currentTime;
+        [987.77, 1318.51].forEach((freq, i) => {
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(freq, now + i * 0.08);
+          gain.gain.setValueAtTime(0.18, now + i * 0.08);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.08 + 0.16);
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start(now + i * 0.08);
+          osc.stop(now + i * 0.08 + 0.18);
+        });
+      },
+
+      playBuild() {
+        if (this.muted || !this.ctx) return;
+        this.unlock();
+        const now = this.ctx.currentTime;
+        [440, 554, 659, 880].forEach((freq, idx) => {
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(freq, now + idx * 0.06);
+          gain.gain.setValueAtTime(0.18, now + idx * 0.06);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.06 + 0.14);
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start(now + idx * 0.06);
+          osc.stop(now + idx * 0.06 + 0.15);
+        });
+      },
+
+      playGavel() {
+        if (this.muted || !this.ctx) return;
+        this.unlock();
+        const now = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'square';
+        osc.frequency.setValueAtTime(140, now);
+        osc.frequency.exponentialRampToValueAtTime(40, now + 0.08);
+        gain.gain.setValueAtTime(0.3, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(now);
+        osc.stop(now + 0.09);
+      },
+
+      playFanfare() {
+        if (this.muted || !this.ctx) return;
+        this.unlock();
+        const now = this.ctx.currentTime;
+        [523.25, 659.25, 783.99, 1046.50].forEach((freq, idx) => {
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(freq, now + idx * 0.1);
+          gain.gain.setValueAtTime(0.24, now + idx * 0.1);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.1 + 0.35);
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start(now + idx * 0.1);
+          osc.stop(now + idx * 0.1 + 0.38);
+        });
+      }
+    };
+
+    /* ==========================================================================
+       3. EXACT 24-TILE BOARD DEFINITION (7x7 Grid Perimeter)
+       4 Corner Anchors + 20 Pure Real Purchasable Lands!
+       ========================================================================== */
+    const BOARD_TILES = [
+      // Tile 0: Corner Bottom-Right
+      { id: 0, name: "Town Square", type: "go", icon: "🏛️", col: 7, row: 7, desc: "Collect $200" },
+      // Bottom Row (Right to Left): col 6 down to 2, row 7 (5 Lands)
+      { id: 1, name: "Seashell Beach", type: "prop", color: "#F4A261", set: "amber", price: 60, baseRent: 6, cottageCost: 50, col: 6, row: 7 },
+      { id: 2, name: "Driftwood Coast", type: "prop", color: "#F4A261", set: "amber", price: 80, baseRent: 8, cottageCost: 50, col: 5, row: 7 },
+      { id: 3, name: "Coconut Bay", type: "prop", color: "#F4A261", set: "amber", price: 100, baseRent: 10, cottageCost: 50, col: 4, row: 7 },
+      { id: 4, name: "Sunny Orchard", type: "prop", color: "#2A9D8F", set: "mint", price: 120, baseRent: 12, cottageCost: 60, col: 3, row: 7 },
+      { id: 5, name: "Clover Meadow", type: "prop", color: "#2A9D8F", set: "mint", price: 140, baseRent: 14, cottageCost: 60, col: 2, row: 7 },
+
+      // Tile 6: Corner Bottom-Left
+      { id: 6, name: "Harbor Rest", type: "jail", icon: "⚓", col: 1, row: 7, desc: "Timeout Area" },
+      // Left Column (Bottom to Top): col 1, row 6 down to 2 (5 Lands)
+      { id: 7, name: "Honeycomb Farm", type: "prop", color: "#E9C46A", set: "sun", price: 160, baseRent: 16, cottageCost: 80, col: 1, row: 6 },
+      { id: 8, name: "Sunflower Field", type: "prop", color: "#E9C46A", set: "sun", price: 180, baseRent: 18, cottageCost: 80, col: 1, row: 5 },
+      { id: 9, name: "Coral Reef", type: "prop", color: "#E76F51", set: "coral", price: 200, baseRent: 20, cottageCost: 90, col: 1, row: 4 },
+      { id: 10, name: "Flamingo Bay", type: "prop", color: "#E76F51", set: "coral", price: 220, baseRent: 22, cottageCost: 90, col: 1, row: 3 },
+      { id: 11, name: "Starfish Shoal", type: "prop", color: "#E76F51", set: "coral", price: 240, baseRent: 24, cottageCost: 90, col: 1, row: 2 },
+
+      // Tile 12: Corner Top-Left
+      { id: 12, name: "Free Market", type: "parking", icon: "🎪", col: 1, row: 1, desc: "Free Rest" },
+      // Top Row (Left to Right): col 2 up to 6, row 1 (5 Lands)
+      { id: 13, name: "Dolphin Marina", type: "prop", color: "#457B9D", set: "blue", price: 260, baseRent: 26, cottageCost: 110, col: 2, row: 1 },
+      { id: 14, name: "Pelican Pier", type: "prop", color: "#457B9D", set: "blue", price: 280, baseRent: 28, cottageCost: 110, col: 3, row: 1 },
+      { id: 15, name: "Pine Valley", type: "prop", color: "#52B788", set: "emerald", price: 300, baseRent: 30, cottageCost: 130, col: 4, row: 1 },
+      { id: 16, name: "Willow Grove", type: "prop", color: "#52B788", set: "emerald", price: 320, baseRent: 32, cottageCost: 130, col: 5, row: 1 },
+      { id: 17, name: "Fern Canyon", type: "prop", color: "#52B788", set: "emerald", price: 340, baseRent: 34, cottageCost: 130, col: 6, row: 1 },
+
+      // Tile 18: Corner Top-Right
+      { id: 18, name: "Storm Warning", type: "gotojail", icon: "⛈️", col: 7, row: 1, desc: "Go to Rest!" },
+      // Right Column (Top to Bottom): col 7, row 2 up to 6 (5 Lands)
+      { id: 19, name: "Pearl Lagoon", type: "prop", color: "#00B4D8", set: "ocean", price: 360, baseRent: 36, cottageCost: 150, col: 7, row: 2 },
+      { id: 20, name: "Mermaid Cove", type: "prop", color: "#00B4D8", set: "ocean", price: 380, baseRent: 38, cottageCost: 150, col: 7, row: 3 },
+      { id: 21, name: "Neptune Abyss", type: "prop", color: "#00B4D8", set: "ocean", price: 400, baseRent: 40, cottageCost: 150, col: 7, row: 4 },
+      { id: 22, name: "Starlight Peak", type: "prop", color: "#9D4EDD", set: "purple", price: 420, baseRent: 42, cottageCost: 170, col: 7, row: 5 },
+      { id: 23, name: "Paradise Citadel", type: "prop", color: "#9D4EDD", set: "purple", price: 450, baseRent: 45, cottageCost: 170, col: 7, row: 6 }
+    ];
+
+    const AVATARS = [
+      { name: "You (Captain)", emoji: "🐻", color: "#E76F51" },
+      { name: "Luna Fox", emoji: "🦊", color: "#F4A261" },
+      { name: "Pip Penguin", emoji: "🐧", color: "#457B9D" },
+      { name: "Oliver Owl", emoji: "🦉", color: "#8D5B4C" },
+      { name: "Daisy Deer", emoji: "🦌", color: "#2A9D8F" },
+      { name: "Milo Monkey", emoji: "🐵", color: "#E9C46A" },
+      { name: "Bella Bunny", emoji: "🐰", color: "#B5838D" },
+      { name: "Leo Lion", emoji: "🦁", color: "#D4A373" }
+    ];
+
+    /* ==========================================================================
+       4. GAME STATE & ENGINE
+       ========================================================================== */
+    const Game = {
+      players: [],
+      currentPlayerIdx: 0,
+      round: 1,
+      maxRounds: 25,
+      speedMultiplier: 1,
+      isRolling: false,
+      isPaused: false,
+      waitingForHumanAction: false,
+      properties: {}, // tileId -> { ownerId, cottages: 0 to 5 }
+
+      // Drag-and-drop state
+      dragActive: false,
+      draggedType: null,
+
+      // Negotiation state
+      negotiationActive: false,
+      negotiationNeedlePos: 0,
+      negotiationSpeed: 1.8,
+      negotiationDir: 1,
+      negotiationPendingData: null,
+
+      // Auction state
+      auctionActive: false,
+      auctionLot: null,
+      auctionHighBid: 0,
+      auctionHighBidderId: null,
+      auctionTimerSec: 8,
+      auctionInterval: null,
+
+      init() {
+        this.renderBoardDOM();
+        this.setupEventListeners();
+        PlayablesBridge.init();
+        SoundManager.init();
+
+        PlayablesBridge.firstFrameReady();
+      },
+
+      setupGame(totalPlayers) {
+        SoundManager.unlock();
+        this.players = [];
+        this.properties = {};
+        this.round = 1;
+        this.currentPlayerIdx = 0;
+        this.isRolling = false;
+
+        for (let i = 0; i < totalPlayers; i++) {
+          this.players.push({
+            id: i,
+            isHuman: (i === 0),
+            name: AVATARS[i].name,
+            emoji: AVATARS[i].emoji,
+            color: AVATARS[i].color,
+            money: 1500,
+            pos: 0,
+            inJail: false,
+            bankrupt: false
+          });
+        }
+
+        BOARD_TILES.forEach(t => {
+          if (t.type === 'prop') {
+            this.properties[t.id] = { ownerId: null, cottages: 0 };
+          }
+        });
+
+        document.getElementById('modal-start').classList.remove('active');
+        document.getElementById('modal-gameover').classList.remove('active');
+
+        this.updateBoardUI();
+        this.updateRosterUI();
+        this.updateTurnUI();
+
+        PlayablesBridge.gameReady();
+        this.setToast(`Welcome to Cozy Island! ${this.players[0].name}, roll the dice!`);
+      },
+
+      renderBoardDOM() {
+        const grid = document.getElementById('board-grid');
+        grid.querySelectorAll('.tile').forEach(e => e.remove());
+
+        BOARD_TILES.forEach(t => {
+          const tileEl = document.createElement('div');
+          tileEl.className = `tile ${t.type !== 'prop' ? 'corner' : ''}`;
+          tileEl.id = `tile-${t.id}`;
+          tileEl.style.gridColumn = t.col;
+          tileEl.style.gridRow = t.row;
+
+          if (t.type === 'prop') {
+            tileEl.innerHTML = `
+              <div class="tile-color-bar" style="background:${t.color};"></div>
+              <div class="tile-name">${t.name}</div>
+              <div class="tile-building-visual" id="visual-${t.id}">🌱</div>
+              <div class="owner-slot" id="owner-slot-${t.id}">
+                <div class="unowned-tag">$${t.price}</div>
+              </div>
+            `;
+          } else {
+            tileEl.innerHTML = `
+              <div style="font-size:18px;">${t.icon}</div>
+              <div class="tile-name" style="font-size:9px;">${t.name}</div>
+              <div style="font-size:7.5px; font-weight:700; color:var(--wood-med);">${t.desc || ''}</div>
+            `;
+          }
+
+          tileEl.addEventListener('click', () => {
+            this.inspectTile(t.id);
+          });
+
+          grid.appendChild(tileEl);
+        });
+      },
+
+      /* PROMINENT, UNMISSABLE LAND OWNERSHIP UPDATE */
+      updateBoardUI() {
+        BOARD_TILES.forEach(t => {
+          if (this.properties[t.id]) {
+            const prop = this.properties[t.id];
+            const tileEl = document.getElementById(`tile-${t.id}`);
+            const ownerSlot = document.getElementById(`owner-slot-${t.id}`);
+            const visual = document.getElementById(`visual-${t.id}`);
+
+            if (!tileEl || !ownerSlot) return;
+
+            if (prop.ownerId !== null) {
+              const owner = this.players[prop.ownerId];
+              // Transform whole tile: thick colored border + tinted background
+              tileEl.classList.add('is-owned');
+              tileEl.style.borderColor = owner.color;
+              tileEl.style.backgroundColor = `${owner.color}15`;
+
+              // Clear bold owner ribbon across the bottom of the card!
+              ownerSlot.innerHTML = `
+                <div class="owner-banner" style="background:${owner.color};">
+                  <span>${owner.emoji}</span>
+                  <span>${owner.isHuman ? 'YOU' : owner.name.split(' ')[0]}</span>
+                </div>
+              `;
+
+              // Visual Cottage evolution
+              if (visual) {
+                if (prop.cottages === 0) visual.textContent = '🏡';
+                else if (prop.cottages === 1) visual.textContent = '🏡';
+                else if (prop.cottages === 2) visual.textContent = '🏘️';
+                else if (prop.cottages === 3) visual.textContent = '🏠🏠';
+                else if (prop.cottages === 4) visual.textContent = '🏡🏘️';
+                else if (prop.cottages >= 5) visual.textContent = '🏰';
+              }
+            } else {
+              // Unowned land
+              tileEl.classList.remove('is-owned');
+              tileEl.style.borderColor = '#EAD8C3';
+              tileEl.style.backgroundColor = '#FFFFFF';
+              ownerSlot.innerHTML = `<div class="unowned-tag">$${t.price}</div>`;
+              if (visual) visual.textContent = '🌱';
+            }
+          }
+        });
+
+        // Player Tokens
+        const tokensLayer = document.getElementById('tokens-layer');
+        tokensLayer.innerHTML = '';
+
+        this.players.forEach(p => {
+          if (p.bankrupt) return;
+          const tileEl = document.getElementById(`tile-${p.pos}`);
+          if (!tileEl) return;
+
+          const rect = tileEl.getBoundingClientRect();
+          const gridRect = document.getElementById('board-grid').getBoundingClientRect();
+
+          const token = document.createElement('div');
+          token.className = 'player-token';
+          token.style.background = p.color;
+          token.textContent = p.emoji;
+
+          const sameTilePlayers = this.players.filter(pl => !pl.bankrupt && pl.pos === p.pos);
+          const indexOnTile = sameTilePlayers.indexOf(p);
+          const offsetX = (indexOnTile % 2) * 8 - 4;
+          const offsetY = Math.floor(indexOnTile / 2) * 8 - 4;
+
+          const left = (rect.left - gridRect.left) + (rect.width / 2) - 9.5 + offsetX;
+          const top = (rect.top - gridRect.top) + (rect.height / 2) - 9.5 + offsetY;
+
+          token.style.left = `${left}px`;
+          token.style.top = `${top}px`;
+          tokensLayer.appendChild(token);
+        });
+      },
+
+      updateRosterUI() {
+        const roster = document.getElementById('players-roster');
+        roster.innerHTML = '';
+
+        this.players.forEach(p => {
+          const chip = document.createElement('div');
+          chip.className = `player-card-chip ${p.id === this.currentPlayerIdx ? 'active' : ''} ${p.bankrupt ? 'bankrupt' : ''}`;
+          chip.innerHTML = `
+            <span class="chip-avatar">${p.emoji}</span>
+            <div style="display:flex; flex-direction:column;">
+              <span class="chip-name">${p.name}</span>
+              <span class="chip-money">$${p.money}</span>
+            </div>
+          `;
+          roster.appendChild(chip);
+        });
+      },
+
+      updateTurnUI() {
+        const curPlayer = this.players[this.currentPlayerIdx];
+        document.getElementById('current-player-avatar').textContent = curPlayer.emoji;
+        document.getElementById('current-player-avatar').style.borderColor = curPlayer.color;
+        document.getElementById('current-player-name').textContent = curPlayer.name;
+        document.getElementById('current-player-cash').textContent = `$${curPlayer.money}`;
+        document.getElementById('round-indicator').textContent = `${this.round} / ${this.maxRounds}`;
+
+        const pill = document.getElementById('turn-status-pill');
+        const rollBtn = document.getElementById('btn-roll-dice');
+        const endBtn = document.getElementById('btn-end-turn');
+        const buildBtn = document.getElementById('btn-toggle-build');
+
+        if (curPlayer.isHuman) {
+          pill.textContent = "Your Turn";
+          pill.style.background = "#E8F5E9";
+          pill.style.color = "#2E7D32";
+          rollBtn.disabled = this.isRolling || this.waitingForHumanAction;
+          endBtn.disabled = !this.waitingForHumanAction;
+          buildBtn.disabled = !this.canPlayerBuild(curPlayer.id);
+        } else {
+          pill.textContent = `${curPlayer.name}'s Turn`;
+          pill.style.background = "#FFF3E0";
+          pill.style.color = "#E65100";
+          rollBtn.disabled = true;
+          endBtn.disabled = true;
+          buildBtn.disabled = true;
+          this.closeDragTray();
+        }
+
+        this.updateRosterUI();
+      },
+
+      setToast(text) {
+        document.getElementById('event-toast').textContent = text;
+      },
+
+      /* ==========================================================================
+         DICE & STEPPING MOVEMENT
+         ========================================================================== */
+      rollDice() {
+        if (this.isRolling) return;
+        this.isRolling = true;
+        SoundManager.playDiceClatter();
+
+        const d1El = document.getElementById('dice-1');
+        const d2El = document.getElementById('dice-2');
+        d1El.classList.add('rolling');
+        d2El.classList.add('rolling');
+
+        const delay = 450 / this.speedMultiplier;
+
+        setTimeout(() => {
+          d1El.classList.remove('rolling');
+          d2El.classList.remove('rolling');
+
+          const d1 = Math.floor(Math.random() * 6) + 1;
+          const d2 = Math.floor(Math.random() * 6) + 1;
+          this.renderDiceFace(d1El, d1);
+          this.renderDiceFace(d2El, d2);
+
+          const total = d1 + d2;
+          const curPlayer = this.players[this.currentPlayerIdx];
+          this.setToast(`${curPlayer.name} rolled a ${total}!`);
+
+          this.movePlayerStepByStep(curPlayer, total);
+        }, delay);
+      },
+
+      renderDiceFace(el, val) {
+        el.innerHTML = '';
+        const dotPositions = {
+          1: [[2, 2]],
+          2: [[1, 1], [3, 3]],
+          3: [[1, 1], [2, 2], [3, 3]],
+          4: [[1, 1], [1, 3], [3, 1], [3, 3]],
+          5: [[1, 1], [1, 3], [2, 2], [3, 1], [3, 3]],
+          6: [[1, 1], [1, 3], [2, 1], [2, 3], [3, 1], [3, 3]]
+        };
+        (dotPositions[val] || []).forEach(pos => {
+          const dot = document.createElement('div');
+          dot.className = 'dot';
+          dot.style.gridArea = `${pos[0]} / ${pos[1]}`;
+          el.appendChild(dot);
+        });
+      },
+
+      movePlayerStepByStep(player, steps) {
+        let remaining = steps;
+        const stepDelay = 110 / this.speedMultiplier;
+
+        const step = () => {
+          if (remaining > 0) {
+            player.pos = (player.pos + 1) % BOARD_TILES.length;
+            SoundManager.playHop();
+
+            // Passed GO
+            if (player.pos === 0) {
+              player.money += 200;
+              SoundManager.playMoney();
+              this.spawnFloatCoin("+$200 Town Salary", player.pos);
+              this.setToast(`${player.name} collected $200 passing Town Square!`);
+            }
+
+            this.updateBoardUI();
+            this.updateTurnUI();
+            remaining--;
+            setTimeout(step, stepDelay);
+          } else {
+            this.handleTileLanding(player);
+          }
+        };
+        setTimeout(step, stepDelay);
+      },
+
+      /* ==========================================================================
+         LANDING & PROPERTY TRANSACTION
+         ========================================================================== */
+      handleTileLanding(player) {
+        const tile = BOARD_TILES[player.pos];
+
+        if (tile.type === 'go') {
+          this.setToast(`${player.name} landed on Town Square!`);
+          this.finishPlayerTurn(player);
+        } else if (tile.type === 'prop') {
+          const prop = this.properties[tile.id];
+
+          if (prop.ownerId === null) {
+            // Unowned Land
+            if (player.isHuman) {
+              this.promptBuyProperty(tile);
+            } else {
+              // AI Decision
+              if (player.money >= tile.price + 130) {
+                this.buyPropertyForPlayer(player, tile);
+                this.finishPlayerTurn(player);
+              } else {
+                this.setToast(`${player.name} passed on ${tile.name}. Starting Auction!`);
+                this.startAuction(tile);
+              }
+            }
+          } else if (prop.ownerId === player.id) {
+            this.setToast(`${player.name} is resting on their own land: ${tile.name}.`);
+            this.finishPlayerTurn(player);
+          } else {
+            // Rival Land: Trigger Negotiation Mini-Game!
+            const owner = this.players[prop.ownerId];
+            const rent = this.calculateRent(tile.id);
+
+            if (player.isHuman) {
+              this.triggerNegotiationMiniGame(player, owner, rent, tile.name);
+            } else {
+              this.payRent(player, owner, rent, tile.name);
+              this.finishPlayerTurn(player);
+            }
+          }
+        } else if (tile.type === 'gotojail') {
+          this.setToast(`⛈️ Storm Alert! ${player.name} was sent to Harbor Rest!`);
+          player.pos = 6; // Harbor Rest
+          player.inJail = true;
+          this.updateBoardUI();
+          this.finishPlayerTurn(player);
+        } else {
+          this.setToast(`${player.name} is visiting ${tile.name}.`);
+          this.finishPlayerTurn(player);
+        }
+      },
+
+      promptBuyProperty(tile) {
+        this.waitingForHumanAction = true;
+        const modal = document.getElementById('modal-buy-property');
+        document.getElementById('buy-deed-header').textContent = tile.name;
+        document.getElementById('buy-deed-header').style.background = tile.color || '#2A9D8F';
+        document.getElementById('buy-deed-price').textContent = `$${tile.price}`;
+
+        const buyBtn = document.getElementById('btn-confirm-buy');
+        buyBtn.disabled = this.players[0].money < tile.price;
+        modal.classList.add('active');
+      },
+
+      buyPropertyForPlayer(player, tile) {
+        player.money -= tile.price;
+        this.properties[tile.id].ownerId = player.id;
+        SoundManager.playBuild();
+        this.spawnFloatCoin(`-$${tile.price}`, tile.id);
+        this.setToast(`🎉 ${player.name} bought and claimed ${tile.name}!`);
+        this.updateBoardUI();
+        this.updateTurnUI();
+      },
+
+      calculateRent(tileId) {
+        const tile = BOARD_TILES[tileId];
+        const prop = this.properties[tileId];
+        if (!prop || prop.ownerId === null) return 0;
+
+        let rent = tile.baseRent;
+        const setTiles = BOARD_TILES.filter(t => t.set === tile.set);
+        const hasMonopoly = setTiles.every(t => this.properties[t.id].ownerId === prop.ownerId);
+
+        if (prop.cottages === 0 && hasMonopoly) rent *= 2;
+        else if (prop.cottages === 1) rent *= 3;
+        else if (prop.cottages === 2) rent *= 4.5;
+        else if (prop.cottages === 3) rent *= 6.5;
+        else if (prop.cottages === 4) rent *= 8.5;
+        else if (prop.cottages >= 5) rent *= 12;
+
+        return Math.floor(rent);
+      },
+
+      payRent(tenant, landlord, amount, propName) {
+        const payment = Math.min(tenant.money, amount);
+        tenant.money -= payment;
+        landlord.money += payment;
+
+        SoundManager.playMoney();
+        this.spawnFloatCoin(`-$${payment} Rent`, tenant.pos);
+        this.setToast(`${tenant.name} paid $${payment} rent to ${landlord.name} for ${propName}!`);
+
+        this.checkBankruptcy(tenant);
+        this.updateBoardUI();
+        this.updateTurnUI();
+      },
+
+      /* ==========================================================================
+         DRAG AND DROP COTTAGE BUILDING
+         ========================================================================== */
+      canPlayerBuild(playerId) {
+        const colorSets = ["amber", "mint", "sun", "coral", "blue", "emerald", "ocean", "purple"];
+        for (const set of colorSets) {
+          const tiles = BOARD_TILES.filter(t => t.set === set);
+          const ownsAll = tiles.every(t => this.properties[t.id].ownerId === playerId);
+          if (ownsAll) {
+            const hasRoom = tiles.some(t => this.properties[t.id].cottages < 5);
+            if (hasRoom) return true;
+          }
+        }
+        return false;
+      },
+
+      toggleDragTray() {
+        const tray = document.getElementById('drag-tray');
+        if (tray.classList.contains('active')) {
+          this.closeDragTray();
+        } else {
+          this.openDragTray();
+        }
+      },
+
+      openDragTray() {
+        document.getElementById('drag-tray').classList.add('active');
+        document.getElementById('main-actions-group').style.display = 'none';
+
+        BOARD_TILES.forEach(t => {
+          if (t.type === 'prop' && this.properties[t.id].ownerId === 0) {
+            const setTiles = BOARD_TILES.filter(st => st.set === t.set);
+            const hasMonopoly = setTiles.every(st => this.properties[st.id].ownerId === 0);
+            if (hasMonopoly && this.properties[t.id].cottages < 5) {
+              const el = document.getElementById(`tile-${t.id}`);
+              if (el) el.classList.add('drop-target');
+            }
+          }
+        });
+      },
+
+      closeDragTray() {
+        document.getElementById('drag-tray').classList.remove('active');
+        document.getElementById('main-actions-group').style.display = 'flex';
+        document.querySelectorAll('.tile').forEach(el => {
+          el.classList.remove('drop-target', 'drop-hover');
+        });
+      },
+
+      initDragAndDrop() {
+        const ghost = document.getElementById('dragged-ghost');
+        const cottageBtn = document.getElementById('drag-cottage');
+        const villaBtn = document.getElementById('drag-villa');
+
+        const onDragStart = (e, type) => {
+          e.preventDefault();
+          this.dragActive = true;
+          this.draggedType = type;
+          ghost.textContent = type === 'villa' ? '🏰' : '🏡';
+          ghost.style.display = 'block';
+          ghost.style.left = `${e.clientX}px`;
+          ghost.style.top = `${e.clientY}px`;
+        };
+
+        const onDragMove = (e) => {
+          if (!this.dragActive) return;
+          ghost.style.left = `${e.clientX}px`;
+          ghost.style.top = `${e.clientY}px`;
+
+          const element = document.elementFromPoint(e.clientX, e.clientY);
+          const tileEl = element ? element.closest('.tile.drop-target') : null;
+
+          document.querySelectorAll('.tile.drop-target').forEach(t => t.classList.remove('drop-hover'));
+          if (tileEl) {
+            tileEl.classList.add('drop-hover');
+          }
+        };
+
+        const onDragEnd = (e) => {
+          if (!this.dragActive) return;
+          this.dragActive = false;
+          ghost.style.display = 'none';
+
+          const element = document.elementFromPoint(e.clientX, e.clientY);
+          const tileEl = element ? element.closest('.tile.drop-target') : null;
+
+          if (tileEl) {
+            const tileId = parseInt(tileEl.id.replace('tile-', ''), 10);
+            this.handleCottageDrop(tileId, this.draggedType);
+          }
+
+          document.querySelectorAll('.tile.drop-target').forEach(t => t.classList.remove('drop-hover'));
+        };
+
+        cottageBtn.addEventListener('pointerdown', (e) => onDragStart(e, 'cottage'));
+        villaBtn.addEventListener('pointerdown', (e) => onDragStart(e, 'villa'));
+
+        window.addEventListener('pointermove', onDragMove);
+        window.addEventListener('pointerup', onDragEnd);
+        window.addEventListener('pointercancel', onDragEnd);
+      },
+
+      handleCottageDrop(tileId, type) {
+        const tile = BOARD_TILES[tileId];
+        const prop = this.properties[tileId];
+        const player = this.players[0];
+
+        const cost = type === 'villa' ? (tile.cottageCost * 2) : tile.cottageCost;
+
+        if (player.money < cost) {
+          this.setToast(`Not enough funds to build! Needed: $${cost}`);
+          return;
+        }
+
+        if (type === 'villa' && prop.cottages < 4) {
+          this.setToast(`Build 4 cottages first before upgrading to a Luxury Villa!`);
+          return;
+        }
+
+        player.money -= cost;
+        prop.cottages = type === 'villa' ? 5 : Math.min(4, prop.cottages + 1);
+
+        SoundManager.playBuild();
+        this.spawnFloatCoin(`-$${cost}`, tileId);
+
+        const visual = document.getElementById(`visual-${tileId}`);
+        if (visual) {
+          visual.classList.remove('bounce');
+          void visual.offsetWidth;
+          visual.classList.add('bounce');
+        }
+
+        this.setToast(`🎉 Dropped & Built on ${tile.name}!`);
+        this.updateBoardUI();
+        this.updateTurnUI();
+        this.closeDragTray();
+      },
+
+      /* ==========================================================================
+         NEGOTIATION & LIVE AUCTION MINI-GAMES
+         ========================================================================== */
+      triggerNegotiationMiniGame(tenant, landlord, fullRent, propName) {
+        this.negotiationActive = true;
+        this.negotiationNeedlePos = 5;
+        this.negotiationSpeed = 1.8;
+        this.negotiationPendingData = { tenant, landlord, fullRent, propName };
+
+        const modal = document.getElementById('modal-negotiate');
+        document.getElementById('negotiate-desc').textContent = 
+          `You landed on ${landlord.name}'s ${propName}! Rent is $${fullRent}. Stop the slider in GREEN to negotiate a 50% discount!`;
+        modal.classList.add('active');
+
+        this.animateNegotiationSlider();
+      },
+
+      animateNegotiationSlider() {
+        if (!this.negotiationActive) return;
+
+        this.negotiationNeedlePos += this.negotiationSpeed * this.negotiationDir;
+        if (this.negotiationNeedlePos >= 95) {
+          this.negotiationNeedlePos = 95;
+          this.negotiationDir = -1;
+        } else if (this.negotiationNeedlePos <= 5) {
+          this.negotiationNeedlePos = 5;
+          this.negotiationDir = 1;
+        }
+
+        document.getElementById('negotiation-needle').style.left = `${this.negotiationNeedlePos}%`;
+        requestAnimationFrame(() => this.animateNegotiationSlider());
+      },
+
+      stopNegotiation() {
+        if (!this.negotiationActive) return;
+        this.negotiationActive = false;
+
+        const pos = this.negotiationNeedlePos;
+        const data = this.negotiationPendingData;
+        document.getElementById('modal-negotiate').classList.remove('active');
+
+        let finalRent = data.fullRent;
+        let outcomeMsg = "";
+
+        if (pos >= 42 && pos <= 58) {
+          finalRent = Math.floor(data.fullRent * 0.5);
+          outcomeMsg = `🎉 MASTER NEGOTIATOR! 50% Rent Discount! Paid $${finalRent}!`;
+          SoundManager.playFanfare();
+        } else if (pos >= 28 && pos <= 72) {
+          finalRent = Math.floor(data.fullRent * 0.75);
+          outcomeMsg = `🤝 FAIR BARGAIN! 25% Discount! Paid $${finalRent}!`;
+          SoundManager.playMoney();
+        } else {
+          outcomeMsg = `❌ NEGOTIATION FAILED! Full rent $${finalRent} paid!`;
+          SoundManager.playGavel();
+        }
+
+        this.payRent(data.tenant, data.landlord, finalRent, data.propName);
+        this.setToast(outcomeMsg);
+        this.finishPlayerTurn(data.tenant);
+      },
+
+      startAuction(tile) {
+        this.auctionActive = true;
+        this.auctionLot = tile;
+        this.auctionHighBid = Math.floor(tile.price * 0.6);
+        this.auctionHighBidderId = null;
+        this.auctionTimerSec = 8.0;
+
+        const modal = document.getElementById('modal-auction');
+        document.getElementById('auction-lot-name').textContent = `Bidding for: ${tile.name} (Value: $${tile.price})`;
+        document.getElementById('auction-high-bid').textContent = `$${this.auctionHighBid}`;
+        document.getElementById('auction-high-bidder').textContent = "Bidder: Opening Price";
+        document.getElementById('auction-bubble').textContent = '"Opening bid is placed! Anyone higher?"';
+        document.getElementById('auction-timer-fill').style.width = '100%';
+
+        modal.classList.add('active');
+        SoundManager.playGavel();
+
+        const stepInterval = 100;
+        this.auctionInterval = setInterval(() => {
+          this.auctionTimerSec -= (stepInterval / 1000);
+          const pct = Math.max(0, (this.auctionTimerSec / 8.0) * 100);
+          document.getElementById('auction-timer-fill').style.width = `${pct}%`;
+
+          if (Math.random() < 0.25 && this.auctionTimerSec > 1.2) {
+            this.aiAttemptAuctionBid();
+          }
+
+          if (this.auctionTimerSec <= 0) {
+            this.endAuction();
+          }
+        }, stepInterval);
+      },
+
+      aiAttemptAuctionBid() {
+        const bots = this.players.filter(p => !p.isHuman && !p.bankrupt && p.id !== this.auctionHighBidderId);
+        if (bots.length === 0) return;
+        const bot = bots[Math.floor(Math.random() * bots.length)];
+
+        const nextBid = this.auctionHighBid + 20;
+        if (bot.money >= nextBid && nextBid <= this.auctionLot.price * 1.35) {
+          this.auctionHighBid = nextBid;
+          this.auctionHighBidderId = bot.id;
+          SoundManager.playMoney();
+
+          document.getElementById('auction-high-bid').textContent = `$${this.auctionHighBid}`;
+          document.getElementById('auction-high-bidder').textContent = `Bidder: ${bot.name}`;
+          document.getElementById('auction-bubble').textContent = `"${bot.name} bids $${this.auctionHighBid}!"`;
+          this.auctionTimerSec = Math.min(8.0, this.auctionTimerSec + 1.2);
+        }
+      },
+
+      playerBidAuction() {
+        if (!this.auctionActive) return;
+        const player = this.players[0];
+        const nextBid = this.auctionHighBid + 20;
+
+        if (player.money < nextBid) {
+          document.getElementById('auction-bubble').textContent = '"Not enough funds to raise bid!"';
+          return;
+        }
+
+        this.auctionHighBid = nextBid;
+        this.auctionHighBidderId = 0;
+        SoundManager.playMoney();
+
+        document.getElementById('auction-high-bid').textContent = `$${this.auctionHighBid}`;
+        document.getElementById('auction-high-bidder').textContent = `Bidder: You!`;
+        document.getElementById('auction-bubble').textContent = `"You raised the bid to $${this.auctionHighBid}!"`;
+        this.auctionTimerSec = Math.min(8.0, this.auctionTimerSec + 1.4);
+      },
+
+      endAuction() {
+        clearInterval(this.auctionInterval);
+        this.auctionActive = false;
+        document.getElementById('modal-auction').classList.remove('active');
+        SoundManager.playGavel();
+
+        if (this.auctionHighBidderId !== null) {
+          const winner = this.players[this.auctionHighBidderId];
+          winner.money -= this.auctionHighBid;
+          this.properties[this.auctionLot.id].ownerId = winner.id;
+          this.spawnFloatCoin(`-$${this.auctionHighBid}`, this.auctionLot.id);
+          this.setToast(`🔨 SOLD! ${winner.name} won ${this.auctionLot.name} for $${this.auctionHighBid}!`);
+        } else {
+          this.setToast(`🔨 Auction ended with no buyers for ${this.auctionLot.name}.`);
+        }
+
+        this.updateBoardUI();
+        this.updateTurnUI();
+        this.finishPlayerTurn(this.players[this.currentPlayerIdx]);
+      },
+
+      /* ==========================================================================
+         TURN ADVANCEMENT & UTILITIES
+         ========================================================================== */
+      finishPlayerTurn(player) {
+        this.isRolling = false;
+        if (player.isHuman) {
+          this.waitingForHumanAction = true;
+          this.updateTurnUI();
+        } else {
+          const delay = 750 / this.speedMultiplier;
+          setTimeout(() => {
+            this.advanceTurn();
+          }, delay);
+        }
+      },
+
+      advanceTurn() {
+        this.waitingForHumanAction = false;
+        let nextIdx = (this.currentPlayerIdx + 1) % this.players.length;
+        if (nextIdx === 0) {
+          this.round++;
+          if (this.round > this.maxRounds) {
+            this.endGame();
+            return;
+          }
+        }
+
+        let attempts = 0;
+        while (this.players[nextIdx].bankrupt && attempts < this.players.length) {
+          nextIdx = (nextIdx + 1) % this.players.length;
+          attempts++;
+        }
+
+        const active = this.players.filter(p => !p.bankrupt);
+        if (active.length <= 1) {
+          this.endGame();
+          return;
+        }
+
+        this.currentPlayerIdx = nextIdx;
+        this.updateTurnUI();
+
+        const curPlayer = this.players[this.currentPlayerIdx];
+        if (!curPlayer.isHuman) {
+          const aiDelay = 650 / this.speedMultiplier;
+          setTimeout(() => {
+            if (!this.isPaused) {
+              this.rollDice();
+            }
+          }, aiDelay);
+        }
+      },
+
+      inspectTile(tileId) {
+        const tile = BOARD_TILES[tileId];
+        if (tile.type === 'prop') {
+          const prop = this.properties[tileId];
+          const ownerText = prop.ownerId !== null ? `Owned by ${this.players[prop.ownerId].name}` : "Unowned Land";
+          const rent = prop.ownerId !== null ? `$${this.calculateRent(tileId)}` : `$${tile.baseRent}`;
+          this.setToast(`📍 ${tile.name}: ${ownerText} (Rent: ${rent})`);
+        } else {
+          this.setToast(`📍 ${tile.name}: ${tile.desc || 'Island Landmark'}`);
+        }
+      },
+
+      checkBankruptcy(player) {
+        if (player.money <= 0) {
+          player.bankrupt = true;
+          player.money = 0;
+          this.setToast(`💔 ${player.name} went bankrupt and left the island!`);
+
+          BOARD_TILES.forEach(t => {
+            if (this.properties[t.id] && this.properties[t.id].ownerId === player.id) {
+              this.properties[t.id].ownerId = null;
+              this.properties[t.id].cottages = 0;
+            }
+          });
+        }
+      },
+
+      spawnFloatCoin(text, tileId) {
+        const tileEl = document.getElementById(`tile-${tileId}`);
+        if (!tileEl) return;
+        const rect = tileEl.getBoundingClientRect();
+        const f = document.createElement('div');
+        f.className = 'float-coin';
+        f.textContent = text;
+        f.style.left = `${rect.left + rect.width / 2}px`;
+        f.style.top = `${rect.top + rect.height / 2}px`;
+        document.body.appendChild(f);
+        setTimeout(() => f.remove(), 1000);
+      },
+
+      endGame() {
+        const sorted = [...this.players].sort((a, b) => {
+          const netA = a.money + this.calculatePlayerPropertyWorth(a.id);
+          const netB = b.money + this.calculatePlayerPropertyWorth(b.id);
+          return netB - netA;
+        });
+
+        const winner = sorted[0];
+        const isHumanWinner = winner.id === 0;
+        const finalNetWorth = this.players[0].money + this.calculatePlayerPropertyWorth(0);
+
+        PlayablesBridge.sendScore(finalNetWorth);
+
+        const modal = document.getElementById('modal-gameover');
+        document.getElementById('gameover-emoji').textContent = isHumanWinner ? '👑' : '🏆';
+        document.getElementById('gameover-title').textContent = isHumanWinner ? 'Island Champion!' : `${winner.name} Wins!`;
+        document.getElementById('gameover-msg').textContent = isHumanWinner
+          ? 'You built the most prosperous island monopoly!'
+          : `${winner.name} finished with the highest net worth on Cozy Island!`;
+        document.getElementById('gameover-networth').textContent = `$${finalNetWorth.toLocaleString()}`;
+
+        if (isHumanWinner) SoundManager.playFanfare();
+        modal.classList.add('active');
+      },
+
+      calculatePlayerPropertyWorth(playerId) {
+        let total = 0;
+        BOARD_TILES.forEach(t => {
+          if (this.properties[t.id] && this.properties[t.id].ownerId === playerId) {
+            total += t.price + (this.properties[t.id].cottages * (t.cottageCost || 0));
+          }
+        });
+        return total;
+      },
+
+      setupEventListeners() {
+        const pills = document.querySelectorAll('.count-pill');
+        let selectedCount = 4;
+        pills.forEach(p => {
+          p.addEventListener('click', () => {
+            pills.forEach(el => el.classList.remove('selected'));
+            p.classList.add('selected');
+            selectedCount = parseInt(p.dataset.count, 10);
+            document.getElementById('bot-count-label').textContent = `1 Human vs ${selectedCount - 1} AI Island Traders`;
+          });
+        });
+
+        document.getElementById('btn-start-game').addEventListener('click', () => {
+          this.setupGame(selectedCount);
+        });
+
+        document.getElementById('btn-roll-dice').addEventListener('click', () => {
+          if (this.players[this.currentPlayerIdx].isHuman && !this.isRolling && !this.waitingForHumanAction) {
+            this.rollDice();
+          }
+        });
+
+        document.getElementById('btn-end-turn').addEventListener('click', () => {
+          if (this.waitingForHumanAction) {
+            this.advanceTurn();
+          }
+        });
+
+        document.getElementById('btn-toggle-build').addEventListener('click', () => {
+          this.toggleDragTray();
+        });
+        document.getElementById('btn-close-tray').addEventListener('click', () => {
+          this.closeDragTray();
+        });
+
+        this.initDragAndDrop();
+
+        document.getElementById('btn-confirm-buy').addEventListener('click', () => {
+          const tile = BOARD_TILES[this.players[0].pos];
+          this.buyPropertyForPlayer(this.players[0], tile);
+          document.getElementById('modal-buy-property').classList.remove('active');
+          this.finishPlayerTurn(this.players[0]);
+        });
+
+        document.getElementById('btn-trigger-auction').addEventListener('click', () => {
+          document.getElementById('modal-buy-property').classList.remove('active');
+          const tile = BOARD_TILES[this.players[0].pos];
+          this.startAuction(tile);
+        });
+
+        document.getElementById('btn-stop-negotiate').addEventListener('click', () => {
+          this.stopNegotiation();
+        });
+
+        document.getElementById('btn-place-bid').addEventListener('click', () => {
+          this.playerBidAuction();
+        });
+
+        const btnSpeed = document.getElementById('btn-speed');
+        btnSpeed.addEventListener('click', () => {
+          this.speedMultiplier = this.speedMultiplier === 1 ? 2 : 1;
+          btnSpeed.textContent = `${this.speedMultiplier}x`;
+          btnSpeed.style.background = this.speedMultiplier === 2 ? '#FFE8D6' : '#FFFFFF';
+        });
+
+        document.getElementById('btn-sound').addEventListener('click', () => {
+          SoundManager.toggle();
+        });
+
+        document.getElementById('btn-play-again').addEventListener('click', () => {
+          document.getElementById('modal-gameover').classList.remove('active');
+          document.getElementById('modal-start').classList.add('active');
+        });
+      }
+    };
+
+    function updateSoundIcons() {
+      const on = document.getElementById('sound-icon-on');
+      const off = document.getElementById('sound-icon-off');
+      if (SoundManager.muted) {
+        on.style.display = 'none';
+        off.style.display = 'inline';
+      } else {
+        on.style.display = 'inline';
+        off.style.display = 'none';
+      }
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      Game.init();
+    });
+  </script>
+</body>
+</html>
